@@ -1,9 +1,8 @@
-package com.ubb.proyecto.controller;
+package com.softwareubb.proyecto_software.controller;
 
-import com.ubb.proyecto.model.Paciente;
-import com.ubb.proyecto.repository.PacienteRepository;
+import com.softwareubb.proyecto_software.model.Paciente;
+import com.softwareubb.proyecto_software.repository.PacienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

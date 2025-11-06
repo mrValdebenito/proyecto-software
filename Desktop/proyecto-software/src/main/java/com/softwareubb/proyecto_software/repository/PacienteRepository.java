@@ -1,6 +1,6 @@
-package com.ubb.proyecto.repository;
+package com.softwareubb.proyecto_software.repository;
 
-import com.ubb.proyecto.model.Paciente;
+import com.softwareubb.proyecto_software.model.Paciente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
