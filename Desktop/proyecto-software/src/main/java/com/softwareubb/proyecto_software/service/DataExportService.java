@@ -33,10 +33,8 @@ public class DataExportService {
             } else {
                 csvContent.append(edadSimulada);
             }
-
             csvContent.append("\n");
         }
-
         return csvContent.toString();
     }
 
