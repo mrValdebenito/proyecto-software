@@ -1,7 +1,10 @@
 package com.softwareubb.proyecto_software.controller;
 
-import com.softwareubb.proyecto_software.payload.request.SignupRequest;
 import com.softwareubb.proyecto_software.service.AuthService;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +13,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import com.softwareubb.proyecto_software.payload.request.LoginRequest;
+import com.softwareubb.proyecto_software.payload.request.JwtRequest;
+import com.softwareubb.proyecto_software.security.jwt.JwtUtils;
+import com.softwareubb.proyecto_software.service.UserDetailsImpl;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -21,22 +27,22 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody SignupRequest signUpRequest) {
-        try {
-            authService.registerUser(signUpRequest);
-            return ResponseEntity.ok("¡Usuario registrado exitosamente!");
-        
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+    @Autowired
+    JwtUtils jwtUtils;
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) { //
+    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+            new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        return ResponseEntity.ok("¡Inicio de sesión exitoso!");
+
+        String jwt = jwtUtils.generateJwtToken(authentication);
+        
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority()).collect(Collectors.toList());
+
+        return ResponseEntity.ok(new JwtRequest(jwt,userDetails.getId(),userDetails.getUsername(),roles));
     }
 }
