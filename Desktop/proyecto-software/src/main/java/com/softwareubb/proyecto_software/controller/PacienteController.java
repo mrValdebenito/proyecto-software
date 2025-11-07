@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/pacientes")
 public class PacienteController {
@@ -30,18 +32,37 @@ public class PacienteController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'EDITOR', 'LECTOR')")
-    public Iterable<Paciente> getAllPacientes() {
-        return pacienteRepository.findAll();
+    public Iterable<Paciente> getAllPacientes(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer edad) {
+        
+        if (edad != null) {
+            return pacienteRepository.findByEdad(edad);
+        } else if (search != null && !search.isEmpty()) {
+            return pacienteRepository.findByRutContainingOrNombreContaining(search, search);
+        } else {
+            return pacienteRepository.findAll();
+        }
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EDITOR', 'LECTOR')")
+    public ResponseEntity<Paciente> getPacienteById(@PathVariable Long id) {
+        return pacienteRepository.findById(id)
+                .map(paciente -> ResponseEntity.ok(paciente))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'EDITOR')")
-    public ResponseEntity<Paciente> updatePaciente(@PathVariable Long id, @RequestBody Paciente detallesPaciente) {
+    public ResponseEntity<Paciente> updatePaciente(@PathVariable Long id, @Valid @RequestBody Paciente detallesPaciente) {
         return pacienteRepository.findById(id)
                 .map(paciente -> {
                     paciente.setNombre(detallesPaciente.getNombre());
                     paciente.setRut(detallesPaciente.getRut());
                     paciente.setDatosFormularioJson(detallesPaciente.getDatosFormularioJson());
+                    paciente.setTieneCancer(detallesPaciente.getTieneCancer());
+                    paciente.setEdad(detallesPaciente.getEdad());
                     Paciente updatedPaciente = pacienteRepository.save(paciente);
                     return ResponseEntity.ok(updatedPaciente);
                 }).orElse(ResponseEntity.notFound().build());

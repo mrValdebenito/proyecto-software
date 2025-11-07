@@ -12,7 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.springframework.security.config.Customizer.withDefaults; // Importar
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -27,9 +27,15 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/error").permitAll()
+                
+                // --- INICIO: AÑADIR ESTAS LÍNEAS PARA SWAGGER (HU #10) ---
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                // --- FIN: AÑADIR LÍNEAS ---
+                
                 .anyRequest().authenticated()
             )
-            .httpBasic(withDefaults()); // <--- ¡AÑADE ESTA LÍNEA!
+            .httpBasic(withDefaults());
         return http.build();
     }
 

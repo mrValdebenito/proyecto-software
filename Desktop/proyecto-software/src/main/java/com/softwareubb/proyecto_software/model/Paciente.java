@@ -28,4 +28,8 @@ public class Paciente {
 
     @Column(columnDefinition = "TEXT")
     private String datosFormularioJson;
+
+    private Boolean tieneCancer;
+
+    private Integer edad; // <-- ¡Este es el campo que faltaba!
 }
