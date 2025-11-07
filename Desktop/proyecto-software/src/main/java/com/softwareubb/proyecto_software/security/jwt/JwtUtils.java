@@ -29,17 +29,11 @@ public class JwtUtils {
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
-        return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(getKey(), SignatureAlgorithm.HS512)
-                .compact();
+        return Jwts.builder().setSubject((userPrincipal.getUsername())).setIssuedAt(new Date()).setExpiration(new Date((new Date()).getTime() + jwtExpirationMs)).signWith(getKey(), SignatureAlgorithm.HS512).compact();
     }
     
     public String getUserNameFromJwtToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(getKey()).build()
-                .parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parserBuilder().setSigningKey(getKey()).build().parseClaimsJws(token).getBody().getSubject();
     }
     public boolean validateJwtToken(String authToken) {
         try {
