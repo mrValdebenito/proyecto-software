@@ -19,12 +19,13 @@ public class DataExportService {
         List<Paciente> pacientes = pacienteRepository.findAll();
         StringBuilder csvContent = new StringBuilder();
 
-        csvContent.append("ID,RUT,Nombre,Variable_Dicotomizada\n");
+        csvContent.append("ID,RUT,Nombre,Tiene_Cancer,Variable_Dicotomizada\n");
 
         for (Paciente p : pacientes) {
             csvContent.append(p.getId()).append(",");
             csvContent.append(escapeSpecialCharacters(p.getRut())).append(",");
             csvContent.append(escapeSpecialCharacters(p.getNombre())).append(",");
+            csvContent.append(p.getTieneCancer() != null ? p.getTieneCancer() : "N/A").append(",");
 
             int edadSimulada = (int) (Math.random() * 80) + 20;
 
@@ -33,8 +34,10 @@ public class DataExportService {
             } else {
                 csvContent.append(edadSimulada);
             }
+
             csvContent.append("\n");
         }
+
         return csvContent.toString();
     }
 
