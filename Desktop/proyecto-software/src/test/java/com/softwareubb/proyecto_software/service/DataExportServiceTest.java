@@ -27,15 +27,20 @@ class DataExportServiceTest {
 
     @Test
     void testDichotomizeValue() {
+        // --- 1. Definición ---
         int umbral = 60;
         
+        // --- 2. Ejecución y Verificación ---
         
+        // Prueba 1: Valor por encima del umbral debe dar 1
         int resultadoSuperior = dataExportService.dichotomizeValue(65, umbral);
         assertEquals(1, resultadoSuperior, "Un valor (65) mayor al umbral (60) debería ser 1");
 
+        // Prueba 2: Valor por debajo del umbral debe dar 0
         int resultadoInferior = dataExportService.dichotomizeValue(50, umbral);
         assertEquals(0, resultadoInferior, "Un valor (50) menor al umbral (60) debería ser 0");
 
+        // Prueba 3: Valor igual al umbral debe dar 0
         int resultadoIgual = dataExportService.dichotomizeValue(60, umbral);
         assertEquals(0, resultadoIgual, "Un valor (60) igual al umbral (60) debería ser 0");
     }

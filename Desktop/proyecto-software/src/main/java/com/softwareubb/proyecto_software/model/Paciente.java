@@ -26,10 +26,44 @@ public class Paciente {
     @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
 
-    @Column(columnDefinition = "TEXT")
+    private String apellido;
+    
+    @Lob
+    @Column(name = "datos_formulario_json")
     private String datosFormularioJson;
 
-    private Boolean tieneCancer;
+    public Long getId() {
+        return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    private Integer edad; // <-- ¡Este es el campo que faltaba!
+    public String getRut() {
+        return rut;
+    }
+    public void setRut(String rut) {
+        this.rut = rut;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
+    public String getDatosFormularioJson() {
+        return datosFormularioJson;
+    }
+    public void setDatosFormularioJson(String datosFormularioJson) {
+        this.datosFormularioJson = datosFormularioJson;
+    }
 }
