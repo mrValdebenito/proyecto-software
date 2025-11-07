@@ -40,6 +40,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(); //HU 16: El cliente necesita que la información se mantenga privada y segura
     }
 }
