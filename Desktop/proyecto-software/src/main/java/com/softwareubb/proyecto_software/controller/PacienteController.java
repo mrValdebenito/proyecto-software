@@ -19,12 +19,9 @@ public class PacienteController {
     @Autowired
     private PacienteRepository pacienteRepository;
 
-<<<<<<< HEAD
-=======
     @Autowired
     private DataExportService dataExportService;
 
->>>>>>> 31417c53bed333b51d2c19a10bc759766a432675
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'EDITOR')")
     public Paciente createPaciente(@Valid @RequestBody Paciente paciente) {
@@ -36,9 +33,6 @@ public class PacienteController {
     public Iterable<Paciente> getAllPacientes() {
         return pacienteRepository.findAll();
     }
-<<<<<<< HEAD
-    //HU 17: El cliente necesita crear, modificar, leer y eliminar la información de los pacientes
-=======
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'EDITOR')")
@@ -77,5 +71,4 @@ public class PacienteController {
 
         return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
     }
->>>>>>> 31417c53bed333b51d2c19a10bc759766a432675
 }

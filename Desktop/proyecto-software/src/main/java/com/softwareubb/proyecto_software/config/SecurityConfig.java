@@ -17,17 +17,10 @@ import static org.springframework.security.config.Customizer.withDefaults; // Im
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
-<<<<<<< HEAD
-
-=======
->>>>>>> 31417c53bed333b51d2c19a10bc759766a432675
 public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-<<<<<<< HEAD
-        http.csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll().anyRequest().authenticated());
-=======
         http
             .cors(AbstractHttpConfigurer::disable)
             .csrf(AbstractHttpConfigurer::disable)
@@ -37,7 +30,6 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .httpBasic(withDefaults()); // <--- ¡AÑADE ESTA LÍNEA!
->>>>>>> 31417c53bed333b51d2c19a10bc759766a432675
         return http.build();
     }
 
