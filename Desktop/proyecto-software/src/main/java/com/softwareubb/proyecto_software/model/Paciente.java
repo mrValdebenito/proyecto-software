@@ -10,7 +10,7 @@ public class Paciente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true) //HU 24: El cliente necesita que no se permita la creación de pacientes duplicados
     private String rut;
 
     @Column(nullable = false)

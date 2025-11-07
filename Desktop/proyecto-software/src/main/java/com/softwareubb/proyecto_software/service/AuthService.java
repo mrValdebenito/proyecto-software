@@ -42,6 +42,7 @@ public class AuthService {
             strRoles.forEach(role -> {
                 switch (role.toLowerCase()) {
                     case "admin":
+                    //HU 30: Cliente quiere poder asignar diferentes niveles de permiso por tipo de usuario para controlar el acceso a los datos
                         Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Rol 'ADMIN' no encontrado."));
                         roles.add(adminRole);
                         break;

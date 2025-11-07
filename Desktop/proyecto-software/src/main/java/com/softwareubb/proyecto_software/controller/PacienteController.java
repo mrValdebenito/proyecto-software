@@ -12,18 +12,14 @@ public class PacienteController {
     @Autowired
     private PacienteRepository pacienteRepository;
 
-    // Ruta para CREAR (HU #7)
     @PostMapping
     public Paciente createPaciente(@RequestBody Paciente paciente) {
         return pacienteRepository.save(paciente);
     }
 
-    // Ruta para LEER todos (HU #7)
     @GetMapping
     public Iterable<Paciente> getAllPacientes() {
         return pacienteRepository.findAll();
     }
-
-    // Aquí irían las rutas PUT y DELETE (HU #7)
-    // ...
+    //HU 17: El cliente necesita crear, modificar, leer y eliminar la información de los pacientes
 }
