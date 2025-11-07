@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta Participante - Estudio Cáncer Gástrico</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <h1>🔹 Nombre del Sistema</h1>
+</header>
+
+<nav>
+    <a href="encuesta.html">📝 Realizar Encuesta</a>
+    <a href="listaParticipantes.html">📈 Lista de participantes</a>
+    <a href="preguntas.html">❓ Gestión de preguntas</a>
+    <button id="logoutBtn">🔓 Cerrar sesión</button>
+</nav>
+
+<main>
+    <h2>Datos del Participante</h2>
+
+    <form id="participanteForm">
+        <input type="hidden" id="idParticipante">
+
+        <label><strong>Nombre:</strong></label>
+        <input type="text" id="nombre" required>
+
+        <label><strong>RUT:</strong></label>
+        <input type="text" id="rut" required>
+
+        <label><strong>Fecha de nacimiento:</strong></label>
+        <input type="date" id="fechaNacimiento" required>
+
+        <label><strong>Sexo:</strong></label>
+        <select id="sexo" required>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+        </select>
+
+        <label><strong>Peso (kg):</strong></label>
+        <input type="number" id="peso">
+
+        <label><strong>Email:</strong></label>
+        <input type="email" id="email">
+
+        <label><strong>Tipo de participante:</strong></label>
+        <select id="esCaso" required>
+            <option value="">Seleccione tipo</option>
+            <option value="true">Caso</option>
+            <option value="false">Control</option>
+        </select>
+
+        <button type="submit">💾 Guardar Participante</button>
+    </form>
+
+    <section id="seccionEncuesta" style="display:none;">
+        <h2>🧠 Cuestionario</h2>
+        <form id="formEncuesta"></form>
+        <button id="btnEnviarRespuestas" style="margin-top: 1rem;">📨 Enviar Respuestas</button>
+    </section>
+</main>
+
+<script>
+    // --- CONTROL DE SESIÓN ---
+    const usuario = sessionStorage.getItem("usuario");
+    if (!usuario) {
+        // Si no hay sesión activa, redirige a login
+        window.location.href = "login.html";
+    }
+    const usuarioObj = JSON.parse(usuario);
+
+    // --- LOGOUT ---
+    document.querySelector("#logoutBtn").addEventListener("click", () => {
+        sessionStorage.removeItem("usuario");
+        alert("✅ Has cerrado sesión");
+        window.location.href = "login.html";
+    });
+
+    // --- ENDPOINTS ---
+    const apiParticipantes = "/api/participantes";
+    const apiPreguntas = "/api/preguntas-encuesta";
+    const apiDatos = "/api/dato-encuesta";
+
+    let participanteActual = null;
+    let preguntas = [];
+
+    // 🔹 Cargar preguntas del backend
+    async function cargarPreguntas() {
+        try {
+            const res = await fetch(apiPreguntas);
+            if (!res.ok) throw new Error("Error cargando preguntas");
+            preguntas = await res.json();
+
+            const form = document.querySelector("#formEncuesta");
+            form.innerHTML = "";
+            preguntas.forEach(p => {
+                const div = document.createElement("div");
+                div.innerHTML = `
+                    <label><strong>${p.enunciado}</strong></label>
+                    <textarea name="preg_${p.idPregunta}" rows="2" placeholder="Tu respuesta aquí..."></textarea>
+                `;
+                form.appendChild(div);
+            });
+        } catch (err) {
+            alert("⚠️ No se pudieron cargar las preguntas. Verifique la API.");
+            console.error(err);
+        }
+    }
+
+    // 🔹 Obtener lista de participantes
+    async function cargarParticipantes() {
+        const res = await fetch(apiParticipantes);
+        return res.json();
+    }
+
+    // 🔹 Generar ID único tipo C001 o P001
+    function generarId(participantes, esCaso) {
+        const prefijo = esCaso ? "C" : "P";
+        const lista = participantes
+            .filter(p => p.idParticipante?.startsWith(prefijo))
+            .map(p => parseInt(p.idParticipante.substring(1)))
+            .filter(num => !isNaN(num));
+        const maxNum = lista.length > 0 ? Math.max(...lista) : 0;
+        return prefijo + (maxNum + 1).toString().padStart(3, "0");
+    }
+
+    // 🔹 Guardar participante
+    document.querySelector("#participanteForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const participantes = await cargarParticipantes();
+        const esCaso = document.querySelector("#esCaso").value === "true";
+
+        let idParticipante = document.querySelector("#idParticipante").value;
+        if (!idParticipante) idParticipante = generarId(participantes, esCaso);
+
+        const participante = {
+            idParticipante,
+            nombre: document.querySelector("#nombre").value,
+            rut: document.querySelector("#rut").value,
+            fechaNacimiento: document.querySelector("#fechaNacimiento").value,
+            sexo: document.querySelector("#sexo").value,
+            peso: document.querySelector("#peso").value || null,
+            email: document.querySelector("#email").value || null,
+            esCaso
+        };
+
+        const method = document.querySelector("#idParticipante").value ? "PUT" : "POST";
+        const url = method === "PUT"
+            ? `${apiParticipantes}/${idParticipante}`
+            : apiParticipantes;
+
+        await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(participante)
+        });
+
+        participanteActual = participante;
+        document.querySelector("#seccionEncuesta").style.display = "block";
+        await cargarPreguntas();
+
+        alert("✅ Participante guardado. Ahora puede responder el cuestionario.");
+    });
+
+    // 🔹 Enviar respuestas
+    document.querySelector("#btnEnviarRespuestas").addEventListener("click", async () => {
+        if (!participanteActual) {
+            alert("⚠️ Guarde el participante antes de enviar las respuestas.");
+            return;
+        }
+
+        const respuestas = preguntas.map(p => ({
+          participante: { idParticipante: participanteActual.idParticipante },
+          pregunta: { idPregunta: p.idPregunta },
+          valorDicotomizado: document.querySelector(`[name='preg_${p.idPregunta}']`).value.trim()
+        }));
+
+        for (const r of respuestas) {
+            await fetch(apiDatos, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(r)
+            });
+        }
+
+        alert("✅ Respuestas enviadas correctamente.");
+        window.location.href = "listaParticipantes.html";
+    });
+</script>
+</body>
+</html>
