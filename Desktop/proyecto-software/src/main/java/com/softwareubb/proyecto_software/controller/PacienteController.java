@@ -33,8 +33,15 @@ public class PacienteController {
 
     @PostMapping
     @PreAuthorize("hasRole('EDITOR') or hasRole('ADMIN')")
-    public Paciente createPaciente(@RequestBody Paciente paciente) {
-        return pacienteService.crearPaciente(paciente);
+    public ResponseEntity<?> createPaciente(@RequestBody Paciente paciente) {
+        
+        try {
+            Paciente nuevoPaciente = pacienteService.crearPaciente(paciente);
+            return ResponseEntity.ok(nuevoPaciente);       
+        } catch (RuntimeException e) {
+            
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
     
     @PutMapping("/{id}")
