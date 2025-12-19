@@ -39,7 +39,7 @@ public class ParticipanteController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoParticipante);
     }
 
-    // 2. READ ALL (Mantiene tu búsqueda por nombre)
+    // 2. READ ALL (Ahora ordenado alfabéticamente)
     @GetMapping
     public List<Participante> listar(HttpSession session, @RequestParam(required = false) String busqueda) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioActual");
@@ -49,9 +49,9 @@ public class ParticipanteController {
         if (busqueda != null && !busqueda.isEmpty()) {
             return participanteRepository.findByNombreContainingIgnoreCase(busqueda);
         }
-        return participanteRepository.findAll();
+        // MODIFICACIÓN: Agregamos Sort.by("nombre")
+        return participanteRepository.findAll(Sort.by("nombre").ascending());
     }
-
     // 3. READ ONE
     @GetMapping("/{id}")
     public ResponseEntity<Participante> getParticipanteById(@PathVariable String id) {
