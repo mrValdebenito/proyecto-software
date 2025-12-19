@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Crear Usuario</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>👤 Crear Usuario</h1>
+</header>
+
+<main>
+    <form id="crearUsuarioForm" class="form-login">
+        <label>Usuario:</label>
+        <input type="text" id="username" required>
+
+        <label>Contraseña:</label>
+        <input type="password" id="password" required>
+
+        <label>Rol:</label>
+        <select id="rol" required>
+            <option value="">Seleccione un rol</option>
+            <option value="Administrador">Administrador</option>
+            <option value="Encuestador">Encuestador</option>
+        </select>
+
+        <button type="submit">Crear Usuario</button>
+    </form>
+
+    <p id="mensaje" style="margin-top: 10px;"></p>
+</main>
+
+<script>
+    document.querySelector("#crearUsuarioForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const data = {
+         nombreUsuario: document.querySelector("#username").value.trim(), // 👈 AÑADIR
+         username: document.querySelector("#username").value.trim(),
+         passwordHash: document.querySelector("#password").value.trim(),
+        rol: document.querySelector("#rol").value
+    };
+
+
+        try {
+            const res = await fetch("/api/usuarios", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (!res.ok) throw new Error();
+
+            document.querySelector("#mensaje").innerText =
+                "✅ Usuario creado correctamente";
+            document.querySelector("#mensaje").style.color = "green";
+        } catch {
+            document.querySelector("#mensaje").innerText =
+                "❌ Error al crear usuario";
+            document.querySelector("#mensaje").style.color = "red";
+        }
+    });
+</script>
+
+</body>
+</html>
