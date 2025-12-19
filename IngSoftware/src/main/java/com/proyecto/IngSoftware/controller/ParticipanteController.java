@@ -3,6 +3,8 @@ package com.proyecto.IngSoftware.controller;
 import com.proyecto.IngSoftware.model.Participante;
 import com.proyecto.IngSoftware.model.Usuario;
 import com.proyecto.IngSoftware.repository.ParticipanteRepository;
+import com.proyecto.IngSoftware.service.ExportService; 
+import jakarta.servlet.http.HttpServletResponse;       
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException; 
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +24,10 @@ public class ParticipanteController {
     @Autowired
     private ParticipanteRepository participanteRepository;
 
-    // 1. CREATE (Con validación de RUT y @Valid)
+    @Autowired
+    private ExportService exportService; 
+
+    // 1. CREATE (Mantiene tu validación de RUT y @Valid)
     @PostMapping
     public ResponseEntity<?> createParticipante(@Valid @RequestBody Participante participante) {
         if (participanteRepository.existsByRut(participante.getRut())) {
@@ -33,14 +39,13 @@ public class ParticipanteController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoParticipante);
     }
 
-    // 2. READ ALL (MODIFICADO: Ahora soporta búsqueda)
+    // 2. READ ALL (Mantiene tu búsqueda por nombre)
     @GetMapping
     public List<Participante> listar(HttpSession session, @RequestParam(required = false) String busqueda) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioActual");
         if (usuario == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Debes iniciar sesión");
         if (!usuario.getRol().equalsIgnoreCase("Administrador")) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acceso solo para administradores");
 
-        // Lógica de búsqueda nueva
         if (busqueda != null && !busqueda.isEmpty()) {
             return participanteRepository.findByNombreContainingIgnoreCase(busqueda);
         }
@@ -54,7 +59,15 @@ public class ParticipanteController {
         return participante.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // 4. UPDATE
+    // --- NUEVO ENDPOINT: EXPORTAR A CSV 
+    @GetMapping("/exportar")
+    public void exportarCsv(HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=\"participantes.csv\"");
+        exportService.generarCsv(response.getWriter(), participanteRepository.findAll());
+    }
+
+    // 4. UPDATE (Mantiene validación)
     @PutMapping("/{id}")
     public ResponseEntity<?> updateParticipante(@PathVariable String id, @Valid @RequestBody Participante detallesParticipante) {
         Optional<Participante> participanteOptional = participanteRepository.findById(id);
