@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    env_file:
+      - .env
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      DB_HOST: db
+      MYSQL_DATABASE: proyectoingsoftware
+      MYSQL_USER: proyecto_user
+      MYSQL_PASSWORD: proyecto_password
+
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+
+    env_file:
+      - .env
+
+    volumes:
+      - db_data:/var/lib/mysql
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    ports:
+      - "3307:3306"
+
+    restart: always
+
+volumes:
+  db_data:
