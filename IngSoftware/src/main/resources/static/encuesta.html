@@ -151,12 +151,27 @@
             ? `${apiParticipantes}/${idParticipante}`
             : apiParticipantes;
 
-        await fetch(url, {
+        // 1. Guardamos la respuesta en una variable 'res'
+        const res = await fetch(url, {
             method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(participante)
         });
 
+        // 2. NUEVO: Si el servidor dice que hay conflicto (409), mostramos alerta y detenemos todo
+        if (res.status === 409) {
+            const mensajeError = await res.text(); // Leemos el mensaje que mandamos desde el Java
+            alert("⚠️ " + mensajeError);
+            return; // ¡Importante! Detenemos la ejecución aquí
+        }
+
+        // 3. Si hubo otro error (ej. 500), avisamos
+        if (!res.ok) {
+            alert("❌ Error desconocido al guardar el participante.");
+            return;
+        }
+
+        // 4. Si todo salió bien, seguimos con el flujo normal
         participanteActual = participante;
         document.querySelector("#seccionEncuesta").style.display = "block";
         await cargarPreguntas();
