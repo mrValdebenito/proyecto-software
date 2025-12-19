@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar Sesión - Estudio Cáncer Gástrico</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <h1>🔐 Inicio de Sesión</h1>
+</header>
+
+<main>
+    <form id="loginForm" class="form-login">
+        <label for="username">Usuario:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">Ingresar</button>
+
+        <p id="mensajeError" style="color: red; display: none; margin-top: 10px;">
+            ❌ Usuario o contraseña incorrectos.
+        </p>
+    </form>
+</main>
+
+<script>
+    document.querySelector("#loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault(); // Evita el envío tradicional del formulario
+
+        const username = document.querySelector("#username").value.trim();
+        const password = document.querySelector("#password").value.trim();
+
+        try {
+            const res = await fetch("/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (!res.ok) {
+                document.querySelector("#mensajeError").style.display = "block";
+                return;
+            }
+
+            const usuario = await res.json();
+            sessionStorage.setItem("usuario", JSON.stringify(usuario));
+
+            if (usuario.rol === "Administrador") {
+                window.location.href = "listaParticipantes.html";
+            } else if (usuario.rol === "Encuestador") {
+                window.location.href = "encuesta.html";
+            } else {
+                alert("Rol no reconocido. Contacte al administrador.");
+            }
+        } catch (err) {
+            console.error("Error en el login:", err);
+            document.querySelector("#mensajeError").style.display = "block";
+        }
+    });
+</script>
+</body>
+</html>
