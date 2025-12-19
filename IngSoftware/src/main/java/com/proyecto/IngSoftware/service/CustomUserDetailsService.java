@@ -25,6 +25,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
+    /**
+ * Carga los detalles del usuario desde la base de datos para la autenticación de Spring Security.
+ */
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         // 1. Buscar el usuario en la base de datos
