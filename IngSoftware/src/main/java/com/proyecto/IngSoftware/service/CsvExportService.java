@@ -10,6 +10,7 @@ import java.util.List;
  * Implementación del servicio de exportación para formato CSV.
  * Genera un archivo de texto separado por comas compatible con Excel.
  */
+
 @Service
 public class CsvExportService implements ExportService {
 
@@ -21,6 +22,9 @@ public class CsvExportService implements ExportService {
      * @param participantes Lista de objetos a exportar.
      */
     @Override
+    /**
+ * Servicio especializado en la generación de reportes en formato CSV a partir de los datos de encuestas.
+ */
     public void generarCsv(Writer writer, List<Participante> participantes) {
         PrintWriter printWriter = new PrintWriter(writer);
         // Cabecera
