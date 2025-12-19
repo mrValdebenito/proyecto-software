@@ -6,50 +6,64 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.*; // <--- IMPORTANTE: Agregar este import
+import jakarta.validation.constraints.*;
 
+/**
+ * Entidad que representa a un participante dentro del sistema de encuestas.
+ * Contiene la información personal, demográfica y clínica básica.
+ * * Se utiliza validación (Bean Validation) para asegurar la integridad de los datos
+ * antes de ser persistidos en la base de datos.
+ */
 @Entity
 @Table(name = "Participante")
 public class Participante {
 
+    /** Identificador único del participante (Rut o código interno). */
     @Id
     @Column(name = "id_participante", length = 10)
     private String idParticipante;
 
-    @NotBlank(message = "El nombre es obligatorio") // <--- Nueva validación
-    @Size(min = 2, message = "El nombre debe tener al menos 2 letras") // <--- Nueva validación
+    /** Nombre completo del participante. No puede estar vacío. */
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(min = 2, message = "El nombre debe tener al menos 2 letras")
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
-    @NotBlank(message = "El RUT es obligatorio") // <--- Nueva validación
+    /** RUT o DNI del participante. Debe ser único en el sistema. */
+    @NotBlank(message = "El RUT es obligatorio")
     @Column(name = "rut", unique = true, nullable = false, length = 12)
     private String rut;
 
-    @NotNull(message = "La fecha de nacimiento es obligatoria") // <--- Nueva validación
-    @Past(message = "La fecha debe ser en el pasado") // <--- Nueva validación
+    /** Fecha de nacimiento. Debe ser una fecha en el pasado. */
+    @NotNull(message = "La fecha de nacimiento es obligatoria")
+    @Past(message = "La fecha debe ser en el pasado")
     @Column(name = "fecha_nacimiento", nullable = false)
     private LocalDate fechaNacimiento;
 
-    @NotNull(message = "El sexo es obligatorio") // <--- Nueva validación
+    /** Sexo biológico o género del participante. */
+    @NotNull(message = "El sexo es obligatorio")
     @Column(name = "sexo", nullable = false, length = 5)
     private String sexo;
 
-    @Min(value = 1, message = "El peso debe ser mayor a 0") // <--- Nueva validación
+    /** Peso corporal en Kilogramos. */
+    @Min(value = 1, message = "El peso debe ser mayor a 0")
     @Column(name = "peso", precision = 5, scale = 2)
     private BigDecimal peso;
 
-    @Email(message = "Formato de correo inválido") // <--- Nueva validación
+    /** Correo electrónico de contacto (opcional). */
+    @Email(message = "Formato de correo inválido")
     @Column(name = "email")
     private String email;
 
-    @NotNull(message = "Debe indicar si es Caso o Control") // <--- Nueva validación
+    /** Indica si el participante pertenece al grupo CASO (true) o CONTROL (false). */
+    @NotNull(message = "Debe indicar si es Caso o Control")
     @Column(name = "es_caso", nullable = false)
     private Boolean esCaso;
 
-    
+    // --- Constructor por defecto ---
     public Participante() {}
 
-    // --- Getters y Setters -
+    // --- Getters y Setters ---
     public String getIdParticipante() { return idParticipante; }
     public void setIdParticipante(String idParticipante) { this.idParticipante = idParticipante; }
     public String getNombre() { return nombre; }
