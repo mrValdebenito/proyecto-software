@@ -3,6 +3,11 @@ package com.proyecto.IngSoftware.model;
 
 import jakarta.persistence.*;
 
+/**
+ * Entidad que representa a un usuario dentro del sistema.
+ * Almacena información sobre credenciales, roles y datos personales.
+ */
+
 @Entity
 @Table(name = "Usuario")
 public class Usuario {
