@@ -11,7 +11,7 @@ services:
       - .env
 
     ports:
-      - "8029:8080"
+      - "8029:8029"
 
     environment:
       DB_HOST: db
@@ -46,10 +46,11 @@ services:
       retries: 5
 
     ports:
-      - "8030:3306"
+      - "8030:8030"
 
     restart: always
 
 volumes:
   db_data:
+
 
