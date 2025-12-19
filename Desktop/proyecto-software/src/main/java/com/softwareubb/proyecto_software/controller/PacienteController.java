@@ -24,13 +24,13 @@ public class PacienteController {
     private DataExportService dataExportService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'EDITOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AYUDANTE')")
     public Paciente createPaciente(@Valid @RequestBody Paciente paciente) {
         return pacienteRepository.save(paciente);
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'EDITOR', 'LECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AYUDANTE', 'ENFERMERO')")
     public Iterable<Paciente> getAllPacientes(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Integer edad) {
@@ -45,7 +45,7 @@ public class PacienteController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EDITOR', 'LECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AYUDANTE', 'ENFERMERO')")
     public ResponseEntity<Paciente> getPacienteById(@PathVariable Long id) {
         return pacienteRepository.findById(id)
                 .map(paciente -> ResponseEntity.ok(paciente))
@@ -53,7 +53,7 @@ public class PacienteController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EDITOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AYUDANTE')")
     public ResponseEntity<Paciente> updatePaciente(@PathVariable Long id, @Valid @RequestBody Paciente detallesPaciente) {
         return pacienteRepository.findById(id)
                 .map(paciente -> {
@@ -78,7 +78,7 @@ public class PacienteController {
     }
 
     @GetMapping("/exportar")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EDITOR')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<byte[]> exportarPacientesCSV(@RequestParam(defaultValue = "false") boolean dicotomizar) {
         String csvContent = dataExportService.generateCSVExport(dicotomizar);
         byte[] csvBytes = csvContent.getBytes();

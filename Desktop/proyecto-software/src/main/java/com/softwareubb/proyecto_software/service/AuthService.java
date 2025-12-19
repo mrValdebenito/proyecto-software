@@ -36,7 +36,7 @@ public class AuthService {
         Set<Role> roles = new HashSet<>();
 
         if (strRoles == null || strRoles.isEmpty()) {
-            Role userRole = roleRepository.findByName(RoleName.ROLE_LECTOR).orElseThrow(() -> new RuntimeException("Error: Rol 'LECTOR' por defecto no encontrado."));
+            Role userRole = roleRepository.findByName(RoleName.ROLE_ENFERMERO).orElseThrow(() -> new RuntimeException("Error: Rol 'LECTOR' por defecto no encontrado."));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
@@ -45,12 +45,12 @@ public class AuthService {
                         Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Rol 'ADMIN' no encontrado."));
                         roles.add(adminRole);
                         break;
-                    case "editor":
-                        Role editorRole = roleRepository.findByName(RoleName.ROLE_EDITOR).orElseThrow(() -> new RuntimeException("Error: Rol 'EDITOR' no encontrado."));
+                    case "ayudante":
+                        Role editorRole = roleRepository.findByName(RoleName.ROLE_AYUDANTE).orElseThrow(() -> new RuntimeException("Error: Rol 'AYUDANTE' no encontrado."));
                         roles.add(editorRole);
                         break;
                     default:
-                        Role userRole = roleRepository.findByName(RoleName.ROLE_LECTOR).orElseThrow(() -> new RuntimeException("Error: Rol 'LECTOR' no encontrado."));
+                        Role userRole = roleRepository.findByName(RoleName.ROLE_ENFERMERO).orElseThrow(() -> new RuntimeException("Error: Rol 'ENFERMERO' no encontrado."));
                         roles.add(userRole);
                 }
             });
