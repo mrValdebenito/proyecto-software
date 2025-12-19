@@ -13,6 +13,10 @@ import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Controlador para gestionar el catálogo de preguntas disponibles en el sistema.
+ */
+
 @RestController
 @RequestMapping("/api/preguntas-encuesta")
 public class PreguntaEncuestaController {
