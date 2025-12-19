@@ -33,6 +33,7 @@ public class DatoEncuestaController {
     private UsuarioRepository usuarioRepository;
 
     // 1. CREATE (Ingresar un nuevo dato dicotomizado) - Permitido para Encuestadores
+    // El proceso de creación vincula automáticamente al encuestador autenticado.
     @PostMapping
     public ResponseEntity<DatoEncuesta> createDatoEncuesta(@RequestBody DatoEncuesta datoEncuestaRequest) {
 
