@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * API para gestionar la persistencia y consulta de datos dicotomizados de encuestas.
+ */
+
 @RestController
 @RequestMapping("/api/datos-encuesta")
 public class DatoEncuestaController {
