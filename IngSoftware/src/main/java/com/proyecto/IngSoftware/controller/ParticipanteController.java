@@ -4,7 +4,7 @@ import com.proyecto.IngSoftware.model.Participante;
 import com.proyecto.IngSoftware.model.Usuario;
 import com.proyecto.IngSoftware.repository.ParticipanteRepository;
 import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid; 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,27 +21,29 @@ public class ParticipanteController {
     @Autowired
     private ParticipanteRepository participanteRepository;
 
-    // 1. CREATE (FUSIONADO: @Valid + Tu validación de RUT)
+    // 1. CREATE (Con validación de RUT y @Valid)
     @PostMapping
     public ResponseEntity<?> createParticipante(@Valid @RequestBody Participante participante) {
-        
         if (participanteRepository.existsByRut(participante.getRut())) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body("Error: El RUT ingresado (" + participante.getRut() + ") ya existe en el sistema.");
         }
-
-        // NUEVA LÓGICA (Guardado estándar)
         Participante nuevoParticipante = participanteRepository.save(participante);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoParticipante);
     }
 
-    // 2. READ ALL
+    // 2. READ ALL (MODIFICADO: Ahora soporta búsqueda)
     @GetMapping
-    public List<Participante> listar(HttpSession session) {
+    public List<Participante> listar(HttpSession session, @RequestParam(required = false) String busqueda) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioActual");
         if (usuario == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Debes iniciar sesión");
         if (!usuario.getRol().equalsIgnoreCase("Administrador")) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acceso solo para administradores");
+
+        // Lógica de búsqueda nueva
+        if (busqueda != null && !busqueda.isEmpty()) {
+            return participanteRepository.findByNombreContainingIgnoreCase(busqueda);
+        }
         return participanteRepository.findAll();
     }
 
@@ -52,14 +54,13 @@ public class ParticipanteController {
         return participante.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // 4. UPDATE 
+    // 4. UPDATE
     @PutMapping("/{id}")
     public ResponseEntity<?> updateParticipante(@PathVariable String id, @Valid @RequestBody Participante detallesParticipante) {
         Optional<Participante> participanteOptional = participanteRepository.findById(id);
 
         if (participanteOptional.isPresent()) {
             Participante participante = participanteOptional.get();
-        
             participante.setNombre(detallesParticipante.getNombre());
             participante.setPeso(detallesParticipante.getPeso());
             participante.setEmail(detallesParticipante.getEmail());
