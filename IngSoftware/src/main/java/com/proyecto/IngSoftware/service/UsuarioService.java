@@ -14,6 +14,10 @@ public class UsuarioService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    /**
+ * Valida el acceso del usuario comparando hashes de contraseñas.
+ */
+
     public Usuario login(String username, String password) {
         return usuarioRepository.findByUsername(username)
                 .filter(u -> passwordEncoder.matches(password, u.getPasswordHash()))
