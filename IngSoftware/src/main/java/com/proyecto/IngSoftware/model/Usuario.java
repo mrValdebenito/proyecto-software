@@ -9,6 +9,7 @@ import jakarta.persistence.*;
  */
 
 @Entity
+//definir para evitar errores futuros
 @Table(name = "Usuario")
 public class Usuario {
 
