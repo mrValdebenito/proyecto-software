@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Participantes</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos específicos para la barra de herramientas */
+        .toolbar {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Estilo del input de búsqueda */
+        #buscador {
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            width: 300px;
+            font-size: 14px;
+        }
+
+        /* Botón de Buscar (Azul) */
+        .btn-search {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .btn-search:hover {
+            background-color: #0056b3;
+        }
+
+        /* Botón de Exportar (Verde) */
+        .btn-export {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none; /* Para que parezca botón aunque sea enlace */
+            font-weight: bold;
+            transition: background-color 0.2s;
+            display: inline-block;
+        }
+        .btn-export:hover {
+            background-color: #218838;
+        }
+
+        /* Tabla y botones de acción */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #343a40; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        .acciones button {
+            padding: 5px 10px;
+            margin-right: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 3px;
+        }
+        .btn-delete { background-color: #dc3545; color: white; }
+        .btn-edit { background-color: #ffc107; color: black; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Gestión de Participantes</h1>
+    </header>
+
+    <nav>
+        <a href="encuesta.html">📝 Nueva Encuesta</a>
+        <a href="listaParticipantes.html" class="active">👥 Ver Participantes</a>
+        <a href="#" onclick="logout()">🚪 Cerrar Sesión</a>
+    </nav>
+
+    <main>
+        <h2>Listado General</h2>
+
+        <div class="toolbar">
+            <input type="text" id="buscador" placeholder="Buscar por nombre..." onkeypress="handleEnter(event)">
+            <button onclick="buscar()" class="btn-search">🔍 Buscar</button>
+            
+            <a href="/api/participantes/exportar" class="btn-export">
+                📊 Exportar a Excel (CSV)
+            </a>
+        </div>
+
+        <table id="tablaParticipantes">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>RUT</th>
+                    <th>Sexo</th>
+                    <th>Peso</th>
+                    <th>Email</th>
+                    <th>Tipo</th> <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </main>
+
+    <script>
+        // Cargar participantes apenas abre la página
+        document.addEventListener("DOMContentLoaded", () => {
+            verificarAuth();
+            buscar(); // Llama a la API sin filtros al inicio
+        });
+
+        // Permitir buscar presionando ENTER
+        function handleEnter(e) {
+            if (e.key === 'Enter') buscar();
+        }
+
+        // Función Principal: Buscar y Listar
+        function buscar() {
+            const inputVal = document.getElementById("buscador").value;
+            // Si hay texto usa el endpoint de búsqueda, si no, trae todos
+            const url = inputVal 
+                ? `/api/participantes?busqueda=${encodeURIComponent(inputVal)}` 
+                : '/api/participantes';
+
+            fetch(url)
+                .then(response => {
+                    if (response.status === 401 || response.status === 403) {
+                        alert("Sesión expirada o sin permisos.");
+                        logout();
+                        return;
+                    }
+                    if (!response.ok) throw new Error("Error en la petición");
+                    return response.json();
+                })
+                .then(data => {
+                    renderizarTabla(data);
+                })
+                .catch(err => console.error("Error cargando datos:", err));
+        }
+
+        // Dibujar la tabla
+        function renderizarTabla(participantes) {
+            const tbody = document.querySelector("#tablaParticipantes tbody");
+            tbody.innerHTML = ""; // Limpiar tabla
+
+            if (participantes.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No se encontraron resultados</td></tr>";
+                return;
+            }
+
+            participantes.forEach(p => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${p.idParticipante || ''}</td>
+                    <td>${p.nombre}</td>
+                    <td>${p.rut}</td>
+                    <td>${p.sexo}</td>
+                    <td>${p.peso ? p.peso + ' kg' : '-'}</td>
+                    <td>${p.email || '-'}</td>
+                    <td>
+                        <span style="padding: 4px 8px; border-radius: 4px; background-color: ${p.esCaso ? '#ffc107' : '#17a2b8'}; color: ${p.esCaso ? 'black' : 'white'};">
+                            ${p.esCaso ? "Caso" : "Control"}
+                        </span>
+                    </td>
+                    <td class="acciones">
+                        <button onclick="eliminar('${p.idParticipante}')" class="btn-delete" title="Eliminar">🗑️</button>
+                        <button onclick="editar('${p.idParticipante}')" class="btn-edit" title="Editar">✏️</button>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Eliminar Participante
+        function eliminar(id) {
+            if(!confirm("¿Estás seguro de eliminar este participante?")) return;
+
+            fetch(`/api/participantes/${id}`, { method: 'DELETE' })
+                .then(res => {
+                    if(res.ok) {
+                        buscar(); // Recargar la tabla
+                    } else {
+                        alert("No se pudo eliminar el registro.");
+                    }
+                });
+        }
+
+        // Editar (Por ahora solo visual)
+        function editar(id) {
+            alert("Funcionalidad de edición: Debes implementar un formulario para editar el ID: " + id);
+            // Aquí podrías redirigir a una página: window.location.href = "editar.html?id=" + id;
+        }
+
+        // Cerrar Sesión
+        function logout() {
+            // Limpiar cualquier token si usaras localStorage (opcional)
+            // sessionStorage.removeItem("token"); 
+            
+            // Redirigir al login (o al endpoint de logout si tienes Spring Security configurado para ello)
+            window.location.href = "login.html"; 
+        }
+
+        // Verificar si hay sesión (simple check visual)
+        function verificarAuth() {
+            // Si usas tokens JWT deberías validar aquí.
+            // Por ahora confiamos en que el backend rechazará la petición si no hay sesión.
+        }
+    </script>
+</body>
+</html>

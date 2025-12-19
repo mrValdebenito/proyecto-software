@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Preguntas - Estudio Cáncer Gástrico</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f7f9fc;
+          margin: 0;
+          padding: 0;
+        }
+        header {
+          background-color: #003366;
+          color: white;
+          text-align: center;
+          padding: 1rem;
+        }
+        nav {
+          background-color: #004080;
+          padding: 0.5rem;
+          text-align: center;
+        }
+        nav a, nav button {
+          color: white;
+          margin: 0 1rem;
+          text-decoration: none;
+          font-weight: bold;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 1rem;
+        }
+        nav button:hover, nav a:hover {
+          text-decoration: underline;
+        }
+        main {
+          max-width: 900px;
+          margin: 2rem auto;
+          background: white;
+          padding: 2rem;
+          border-radius: 10px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+          color: #003366;
+        }
+        form {
+          margin-bottom: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.8rem;
+        }
+        input, select, textarea {
+          width: 100%;
+          padding: 0.6rem;
+          border-radius: 6px;
+          border: 1px solid #ccc;
+          font-size: 1rem;
+        }
+        textarea {
+          resize: vertical;
+          min-height: 80px;
+        }
+        button {
+          background-color: #003366;
+          color: white;
+          border: none;
+          padding: 0.7rem 1rem;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 1rem;
+        }
+        button:hover {
+          background-color: #0055aa;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 1.5rem;
+        }
+        th, td {
+          border: 1px solid #ccc;
+          padding: 0.6rem;
+          text-align: left;
+        }
+        th {
+          background-color: #e9eef5;
+        }
+        .acciones button {
+          margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>❓ Gestión de Preguntas del Cuestionario</h1>
+</header>
+
+<nav>
+    <a href="encuesta.html">📝 Realizar Encuesta</a>
+    <a href="listaParticipantes.html">📈 Lista de participantes</a>
+    <a href="preguntas.html">❓ Gestión de preguntas</a>
+    <button id="logoutBtn">🔓 Cerrar sesión</button>
+</nav>
+
+<main>
+    <h2>Agregar o Editar Pregunta</h2>
+
+    <form id="formPregunta">
+        <input type="hidden" id="id_pregunta">
+
+        <label for="enunciado"><strong>Enunciado de la pregunta:</strong></label>
+        <textarea id="enunciado" placeholder="Escribe el texto completo de la pregunta aquí..." required></textarea>
+
+        <label for="categoria"><strong>Categoría:</strong></label>
+        <input type="text" id="categoria" placeholder="Ej: Hábitos, Antecedentes, Alimentación">
+
+        <button type="submit">💾 Guardar Pregunta</button>
+    </form>
+
+    <h2>Listado de Preguntas</h2>
+    <table id="tablaPreguntas">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Enunciado</th>
+            <th>Categoría</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</main>
+
+<script>
+    // --- CONTROL DE SESIÓN ---
+    const usuario = sessionStorage.getItem("usuario");
+    if (!usuario) {
+        alert("Debes iniciar sesión para acceder a esta página");
+        window.location.href = "login.html";
+    }
+    const usuarioObj = JSON.parse(usuario);
+
+    // Solo administradores pueden gestionar preguntas
+    if (usuarioObj.rol !== "Administrador") {
+        const tbody = document.querySelector("#tablaPreguntas tbody");
+        tbody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">
+            ❌ No estás autorizado para ver o gestionar las preguntas
+        </td></tr>`;
+        document.querySelector("#formPregunta").style.display = "none";
+    }
+
+    // --- LOGOUT ---
+    document.querySelector("#logoutBtn").addEventListener("click", () => {
+        sessionStorage.removeItem("usuario");
+        alert("✅ Has cerrado sesión");
+        window.location.href = "login.html";
+    });
+
+    // --- API PREGUNTAS ---
+    const apiUrl = "/api/preguntas-encuesta";
+    let preguntasCache = [];
+
+    async function cargarPreguntas() {
+        if (usuarioObj.rol !== "Administrador") return;
+
+        const tbody = document.querySelector("#tablaPreguntas tbody");
+        tbody.innerHTML = "";
+
+        try {
+            const res = await fetch(apiUrl);
+            if (!res.ok) {
+                tbody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">
+                    ❌ Error al cargar las preguntas
+                </td></tr>`;
+                return;
+            }
+            preguntasCache = await res.json();
+
+            if (preguntasCache.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay preguntas registradas</td></tr>`;
+                return;
+            }
+
+            preguntasCache.forEach(p => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${p.idPregunta}</td>
+                    <td>${p.enunciado}</td>
+                    <td>${p.categoria ?? "-"}</td>
+                    <td class="acciones">
+                        <button onclick="editar(${p.idPregunta})">✏️ Editar</button>
+                        <button onclick="eliminar(${p.idPregunta})">🗑️ Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">
+                ❌ Error al cargar las preguntas
+            </td></tr>`;
+            console.error(err);
+        }
+    }
+
+    document.querySelector("#formPregunta").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (usuarioObj.rol !== "Administrador") return;
+
+        const id = document.querySelector("#id_pregunta").value;
+        const enunciado = document.querySelector("#enunciado").value;
+        const categoria = document.querySelector("#categoria").value;
+        const pregunta = { enunciado, categoria };
+
+        if (id) {
+            await fetch(`${apiUrl}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(pregunta)
+            });
+        } else {
+            await fetch(apiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(pregunta)
+            });
+        }
+
+        e.target.reset();
+        document.querySelector("#id_pregunta").value = "";
+        await cargarPreguntas();
+    });
+
+    async function editar(id) {
+        const p = preguntasCache.find(x => x.idPregunta === id);
+        document.querySelector("#id_pregunta").value = p.idPregunta;
+        document.querySelector("#enunciado").value = p.enunciado;
+        document.querySelector("#categoria").value = p.categoria ?? "";
+    }
+
+    async function eliminar(id) {
+        if (!confirm("¿Seguro que deseas eliminar esta pregunta?")) return;
+        await fetch(`${apiUrl}/${id}`, { method: "DELETE" });
+        await cargarPreguntas();
+    }
+
+    cargarPreguntas();
+</script>
+</body>
+</html>
