@@ -20,10 +20,20 @@ public class ParticipanteController {
     @Autowired
     private ParticipanteRepository participanteRepository;
 
-    // 1. CREATE (Crear un nuevo participante)
+   // 1. CREATE (Crear un nuevo participante)
     @PostMapping
-    public Participante createParticipante(@RequestBody Participante participante) {
-        return participanteRepository.save(participante);
+    public ResponseEntity<?> createParticipante(@RequestBody Participante participante) {
+        // Validar si ya existe el RUT
+        if (participanteRepository.existsByRut(participante.getRut())) {
+            // Retornar un error 409 Conflict con un mensaje claro
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("Error: El RUT ingresado (" + participante.getRut() + ") ya existe en el sistema.");
+        }
+
+        // Si no existe, lo guarda
+        Participante nuevoParticipante = participanteRepository.save(participante);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoParticipante);
     }
 
     // 2. READ ALL (Obtener todos los participantes)

@@ -4,9 +4,14 @@ import com.proyecto.IngSoftware.model.Participante;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional; // Importar Optional si deseas usar findByRut o simplemente boolean
+
 @Repository
 public interface ParticipanteRepository extends JpaRepository<Participante, String> {
-    // Hereda métodos: findAll(), findById(id), save(participante), deleteById(id), etc.
-    // También puedes agregar métodos personalizados aquí:
-    // List<Participante> findByEsCaso(Boolean esCaso); 
+    
+    // Agrega este método para verificar existencia por RUT de forma eficiente
+    boolean existsByRut(String rut);
+
+    // Opcional: si alguna vez necesitas obtener el participante completo por RUT
+    Optional<Participante> findByRut(String rut);
 }
