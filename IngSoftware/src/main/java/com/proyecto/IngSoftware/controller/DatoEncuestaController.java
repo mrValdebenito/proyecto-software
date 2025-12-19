@@ -61,6 +61,7 @@ public class DatoEncuestaController {
     }
 
     // 2. READ ALL / READ by Participante (Solo Administrador puede ver todos los datos)
+    // Operación de lectura optimizada para consulta de resultados.
     @GetMapping
     // Nota: El permiso para este endpoint debe ser 'hasRole("ADMINISTRADOR")' en SecurityConfig
     public List<DatoEncuesta> getAllDatosEncuesta(@RequestParam(required = false) String idParticipante) {
