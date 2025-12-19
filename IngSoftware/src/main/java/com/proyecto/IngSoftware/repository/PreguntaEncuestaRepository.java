@@ -1,5 +1,8 @@
 // Archivo: src/main/java/com/proyecto/IngSoftware/repository/PreguntaEncuestaRepository.java
 
+/**
+ * Interfaz para acceder a las definiciones de las preguntas de la encuesta.
+ */
 package com.proyecto.IngSoftware.repository;
 
 import com.proyecto.IngSoftware.model.PreguntaEncuesta;
